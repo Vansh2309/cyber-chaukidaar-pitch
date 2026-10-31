@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cyber Chaukidaar Pitch</title>
+<meta name="description" content="Cyber Chaukidaar by Order of Phoenix at hackCBS 9.0: ground-sensing security sentries explained by Gemini and remembered by TigerData.">
+<meta name="theme-color" content="#070B10">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23FF6A2B'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a fixed 16:9-ish stage, one slide at a time, GSAP entrances, HUD at the bottom.
+   Single committed dark look (a control-room screen), ember accent for the Phoenix team, cyan for sensor data. */
+:root{
+  --bg:#070B10; --bg2:#0D141C; --panel:#111B25; --line:#1F2C3A;
+  --fg:#EAF0F5; --muted:#8FA0AE; --dim:#5B6B79;
+  --ember:#FF6A2B; --amber:#FFB347; --cyan:#4FD1FF; --green:#5CE0A1; --red:#FF4D5E;
+  --display:'Unbounded','Manrope',Arial,sans-serif; --body:'Manrope','Segoe UI',Arial,sans-serif; --mono:'JetBrains Mono','SFMono-Regular',Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased}
+.stage{position:relative;height:100%;overflow:hidden;background:radial-gradient(1200px 700px at 70% -10%,#13202D 0%,var(--bg) 60%)}
+#bgwave{position:absolute;inset:0;width:100%;height:100%;opacity:.55;pointer-events:none}
+.progress{position:absolute;left:0;right:0;top:0;height:3px;background:rgba(255,255,255,.06);z-index:20}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ember),var(--amber));transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.slide{position:absolute;inset:0;display:none;z-index:2;padding-block:clamp(56px,7vh,90px) clamp(72px,10vh,110px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.slide.active{display:block}
+.inner{height:100%;max-width:1320px;margin:0 auto;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;justify-content:center;gap:clamp(18px,3vh,36px);scrollbar-width:thin}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--amber)}
+.eyebrow.cy{color:var(--cyan)}
+h1,h2,h3{margin:0;font-family:var(--display);text-wrap:balance;line-height:1.08}
+h1{font-size:clamp(2.4rem,7.2vw,6.4rem);font-weight:900;letter-spacing:-.02em}
+h2{font-size:clamp(1.7rem,3.8vw,3.3rem);font-weight:700;letter-spacing:-.015em}
+h3{font-size:clamp(1.05rem,1.6vw,1.35rem);font-weight:700;font-family:var(--body)}
+p{margin:0}
+.lead{font-size:clamp(1.05rem,1.7vw,1.5rem);color:var(--muted);max-width:60ch;line-height:1.45}
+.grid{display:grid;gap:clamp(12px,1.6vw,22px)}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,2vw,28px);min-width:0;display:flex;flex-direction:column;gap:10px}
+.card p{color:var(--muted);font-size:clamp(.92rem,1.15vw,1.05rem)}
+.card .k{font-family:var(--mono);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.card.hot{border-color:rgba(255,106,43,.45);box-shadow:0 0 0 1px rgba(255,106,43,.15),0 20px 60px -30px rgba(255,106,43,.5)}
+.card.cool{border-color:rgba(79,209,255,.35)}
+.fire{background:linear-gradient(92deg,#FFD08A 0%,var(--amber) 30%,var(--ember) 70%,#FF3D6E 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mono{font-family:var(--mono)}
+.tag{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.tag b{color:var(--fg);font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.hud{position:absolute;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px max(20px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));font-family:var(--mono);font-size:.78rem;color:var(--dim);background:linear-gradient(180deg,transparent,rgba(7,11,16,.85))}
+.hud .nav{display:flex;gap:8px}
+.hud button{all:unset;cursor:pointer;width:40px;height:40px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;color:var(--fg);background:rgba(17,27,37,.8);transition:transform .2s,border-color .2s}
+.hud button:hover{transform:translateY(-2px);border-color:var(--ember)}
+.hud button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.hud .hint{opacity:.8}
+.brand{position:absolute;top:14px;left:max(20px,env(safe-area-inset-left,0px));z-index:20;font-family:var(--mono);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);display:flex;gap:10px;align-items:center}
+.brand i{width:10px;height:10px;border-radius:50%;background:var(--ember);box-shadow:0 0 16px var(--ember)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+
+/* cover */
+.cover-wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:clamp(20px,4vw,60px);align-items:center}
+.cover-title .word{display:inline-block;overflow:hidden;vertical-align:bottom}
+.cover-title .word span{display:inline-block}
+.cover-img{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#F2EFE8;aspect-ratio:1024/572;max-width:100%}
+.cover-img img{width:100%;height:100%;object-fit:contain;display:block;filter:saturate(1.05)}
+.cover-img .cap{position:absolute;left:12px;bottom:12px;padding:6px 10px;border-radius:8px;background:rgba(7,11,16,.75);backdrop-filter:blur(6px);font-family:var(--mono);font-size:.72rem;color:var(--fg)}
+.ember{position:absolute;border-radius:50%;background:var(--ember);filter:blur(1px);opacity:0;pointer-events:none}
+
+/* problem */
+.big-num{font-family:var(--display);font-size:clamp(2rem,4vw,3.6rem);font-weight:900;color:var(--fg);letter-spacing:-.02em;line-height:1}
+.sub{font-size:.9rem;color:var(--muted)}
+
+/* flow */
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:10px}
+.flow .arrow{align-self:center;width:46px;height:2px;background:linear-gradient(90deg,var(--line),var(--cyan));position:relative}
+.flow .arrow::after{content:"";position:absolute;right:-1px;top:-5px;border:6px solid transparent;border-left-color:var(--cyan)}
+.flow .card{border-top:3px solid var(--ember)}
+.flow .card:nth-child(3){border-top-color:var(--cyan)}
+.flow .card:nth-child(5){border-top-color:var(--amber)}
+
+/* hardware */
+.hw{display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(14px,2vw,28px);align-items:start}
+.photo{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--bg2);max-width:100%}
+.photo img{display:block;width:100%;height:100%;object-fit:cover}
+.photo .lbl{position:absolute;left:14px;top:14px;padding:6px 10px;border-radius:8px;background:rgba(7,11,16,.78);backdrop-filter:blur(6px);font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
+.photo .call{position:absolute;padding:5px 9px;border-radius:7px;background:rgba(7,11,16,.85);border:1px solid var(--line);font-family:var(--mono);font-size:.68rem;color:var(--fg);white-space:nowrap}
+.photo .call::before{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);left:-14px;top:50%;transform:translateY(-50%)}
+.hw-side{display:grid;gap:12px}
+.hw-side .photo{aspect-ratio:16/10}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:.9rem;color:var(--muted)}
+.specs b{color:var(--fg);font-weight:600}
+
+/* signals */
+.sig{display:grid;grid-template-columns:1.5fr 1fr;gap:clamp(12px,2vw,24px)}
+.scope{position:relative;border-radius:16px;border:1px solid var(--line);background:#060A0F;overflow:hidden;aspect-ratio:16/8;max-width:100%}
+.scope canvas{position:absolute;inset:0;width:100%;height:100%}
+.scope .hdr{position:absolute;left:12px;top:10px;display:flex;gap:14px;font-family:var(--mono);font-size:.7rem;color:var(--dim)}
+.scope .hdr b{color:var(--cyan);font-weight:600}
+.scope .hdr .b2{color:var(--amber)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{all:unset;cursor:pointer;padding:9px 14px;border-radius:999px;border:1px solid var(--line);font-family:var(--mono);font-size:.78rem;color:var(--muted);transition:all .25s}
+.chips button:hover{border-color:var(--amber);color:var(--fg)}
+.chips button[aria-pressed="true"]{background:linear-gradient(90deg,rgba(255,106,43,.25),rgba(255,179,71,.15));border-color:var(--ember);color:var(--fg)}
+.chips button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.ppi{position:relative;aspect-ratio:1;max-width:100%;border-radius:50%;background:radial-gradient(circle,rgba(79,209,255,.08),rgba(79,209,255,.02) 60%,transparent 70%);border:1px solid rgba(79,209,255,.25);overflow:hidden}
+.ppi::before,.ppi::after{content:"";position:absolute;inset:20%;border-radius:50%;border:1px solid rgba(79,209,255,.18)}
+.ppi::after{inset:40%}
+.ppi .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(79,209,255,.55),rgba(79,209,255,0) 70deg,transparent 70deg);animation:spin 3s linear infinite;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ppi .blip{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--amber);box-shadow:0 0 18px var(--amber);transform:translate(-50%,-50%);transition:opacity .4s,left .6s,top .6s}
+.ppi .none{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;transition:opacity .4s}
+.verdict{display:grid;gap:10px}
+.verdict .vt{font-family:var(--display);font-size:clamp(1rem,1.5vw,1.35rem);font-weight:700;line-height:1.2}
+.feat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.feat div{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.feat .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.feat .v{font-family:var(--mono);font-size:1.05rem;color:var(--cyan);font-variant-numeric:tabular-nums}
+.sev{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:.76rem;font-weight:600;letter-spacing:.08em}
+.sev.crit{background:rgba(255,77,94,.15);color:#FF8A96;border:1px solid rgba(255,77,94,.4)}
+.sev.med{background:rgba(255,179,71,.15);color:var(--amber);border:1px solid rgba(255,179,71,.4)}
+.sev.silent{background:rgba(79,209,255,.12);color:var(--cyan);border:1px solid rgba(79,209,255,.4)}
+
+/* pipeline */
+.pipe{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.pipe .card{position:relative;z-index:1;border-top:2px solid var(--line)}
+.pipe .card .k{color:var(--amber)}
+.rail{position:relative;height:8px;margin:4px 6% 0;border-radius:99px;background:var(--line);overflow:visible}
+.rail i{position:absolute;top:50%;left:0;width:16px;height:16px;border-radius:50%;background:var(--cyan);box-shadow:0 0 22px var(--cyan),0 0 60px rgba(79,209,255,.5);transform:translate(-50%,-50%)}
+.rail b{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--panel);border:2px solid var(--dim);transform:translate(-50%,-50%)}
+.pipe-side{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pipe-side .card{flex-direction:row;align-items:center;gap:14px}
+.pipe-side .ic{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:1rem;flex:none}
+
+/* missions */
+table{width:100%;border-collapse:collapse;font-size:clamp(.86rem,1.1vw,1rem)}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:500}
+td:first-child{font-weight:700;white-space:nowrap}
+td{color:var(--muted)}
+td:first-child{color:var(--fg)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+
+/* gemini */
+.term{background:#050809;border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-family:var(--mono);font-size:clamp(.82rem,1.05vw,.98rem);line-height:1.6;color:#C9D6E2;min-height:200px}
+.term .pr{color:var(--amber)}
+.term .cur{display:inline-block;width:9px;height:1.1em;background:var(--amber);vertical-align:-3px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.term .ans{color:var(--cyan)}
+
+/* tiger */
+.bars{display:flex;align-items:flex-end;gap:6px;height:180px;padding:14px 10px 0;border-bottom:1px solid var(--line)}
+.bars i{flex:1;background:linear-gradient(180deg,var(--cyan),rgba(79,209,255,.25));border-radius:4px 4px 0 0;transform-origin:bottom;min-width:0}
+.bars i.hot{background:linear-gradient(180deg,var(--ember),rgba(255,106,43,.25))}
+.axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.66rem;color:var(--dim);padding:6px 10px 0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.92rem}
+.kv b{font-family:var(--mono);font-weight:600;color:var(--cyan);white-space:nowrap}
+.kv span{color:var(--muted)}
+
+/* numbers */
+.nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(14px,2vw,28px)}
+.num{border-left:2px solid var(--ember);padding-left:18px}
+.num .v{font-family:var(--display);font-size:clamp(2.4rem,5.5vw,5rem);font-weight:900;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.num .v small{font-size:.45em;font-weight:700;color:var(--amber)}
+.num p{color:var(--muted);margin-top:8px;font-size:.95rem}
+
+/* business */
+.biz{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,2vw,28px)}
+.phase{position:relative;border-radius:16px;padding:clamp(18px,2vw,28px);border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;gap:12px;min-width:0}
+.phase.p1{border-color:rgba(255,179,71,.4)}
+.phase.p2{border-color:rgba(79,209,255,.4);background:linear-gradient(180deg,rgba(79,209,255,.06),var(--panel))}
+.phase .ph{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber)}
+.phase.p2 .ph{color:var(--cyan)}
+.price{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px dashed var(--line);font-size:.95rem}
+.price:last-of-type{border-bottom:none}
+.price b{font-family:var(--mono);font-weight:600;white-space:nowrap;color:var(--fg)}
+.price span{color:var(--muted)}
+.flywheel{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.flywheel i{font-style:normal;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--fg)}
+.flywheel em{font-style:normal;color:var(--dim)}
+.note{font-family:var(--mono);font-size:.72rem;color:var(--dim)}
+
+/* team */
+.team{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.6vw,20px)}
+.member{position:relative;border-radius:16px;border:1px solid var(--line);background:var(--panel);padding:22px 18px;display:flex;flex-direction:column;gap:10px;overflow:hidden;min-width:0}
+.member::before{content:"";position:absolute;inset:auto -30% -60% -30%;height:120%;background:radial-gradient(closest-side,rgba(255,106,43,.35),transparent);opacity:.6}
+.member .ini{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-family:var(--display);font-weight:900;color:#1A0C06;background:linear-gradient(135deg,var(--amber),var(--ember))}
+.member .nm{font-family:var(--display);font-weight:700;font-size:clamp(.95rem,1.3vw,1.15rem);line-height:1.25;position:relative}
+.member .rl{color:var(--muted);font-size:.86rem;position:relative}
+.phx{width:min(260px,60vw);height:auto}
+
+/* cross-section (problem) */
+.xsec{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#0A1119;max-width:100%}
+.xsec svg{display:block;width:100%;height:auto;max-height:300px}
+.xsec text{font-family:var(--mono);font-size:13px;fill:var(--muted);letter-spacing:.08em}
+.xsec .ring{transform-box:fill-box;transform-origin:center;animation:ring 3s ease-out infinite;opacity:0}
+.xsec .ring.r2{animation-delay:1s}.xsec .ring.r3{animation-delay:2s}
+@keyframes ring{0%{transform:scale(.1);opacity:.9}100%{transform:scale(1);opacity:0}}
+.xsec .spike{animation:glow 3s ease-out infinite}
+.xsec .spike.s2{animation-delay:.4s}
+@keyframes glow{0%,60%,100%{fill:#8FA0AE;filter:none}40%{fill:#4FD1FF;filter:drop-shadow(0 0 6px #4FD1FF)}}
+.xsec .walk{animation:walk 2.2s ease-in-out infinite}
+@keyframes walk{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.pcards .card{padding:14px 18px;gap:4px}
+.pcards .big-num{font-size:clamp(1.5rem,2.6vw,2.2rem)}
+
+/* site map */
+.map{position:relative;border-radius:16px;border:1px solid var(--line);background:#060A0F;overflow:hidden;aspect-ratio:2/1;max-width:100%}
+.map canvas{position:absolute;inset:0;width:100%;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+
+/* fusion */
+.fus{display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(12px,2vw,24px);align-items:start}
+.terms{display:grid;gap:8px}
+.term-row{display:grid;grid-template-columns:minmax(0,170px) 1fr 58px;align-items:center;gap:10px;font-size:.86rem}
+.term-row .lab{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.term-row .trk{position:relative;height:16px;background:rgba(255,255,255,.04);border-radius:4px}
+.term-row .trk::before{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:var(--dim)}
+.term-row .bar{position:absolute;top:2px;bottom:2px;border-radius:3px;background:var(--cyan)}
+.term-row .bar.neg{background:var(--ember)}
+.term-row .val{font-family:var(--mono);font-size:.8rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--fg)}
+.gauge{position:relative;text-align:center}
+.gauge svg{width:min(100%,300px);height:auto;display:block;margin:0 auto}
+.gauge .pct{font-family:var(--display);font-size:clamp(2rem,4vw,3.4rem);font-weight:900;letter-spacing:-.03em;line-height:1;margin-top:-18px;font-variant-numeric:tabular-nums}
+.gauge .lv{font-family:var(--mono);font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;margin-top:6px}
+.guard{font-size:.86rem;color:var(--muted);border-left:2px solid var(--amber);padding-left:12px;margin-top:14px}
+
+/* field */
+.field{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2vw,24px)}
+.pbars{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:end;height:190px;padding-top:30px;border-bottom:1px solid var(--line)}
+.pbars div{position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.pbars i{display:block;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--green),rgba(92,224,161,.2));transform-origin:bottom}
+.pbars i.hot{background:linear-gradient(180deg,var(--ember),rgba(255,106,43,.2))}
+.pbars b{position:absolute;left:0;right:0;text-align:center;font-family:var(--mono);font-size:.78rem;color:var(--fg);transform:translateY(-22px)}
+.plabels{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-family:var(--mono);font-size:.66rem;color:var(--dim);text-align:center;padding-top:6px;letter-spacing:.06em}
+.duty{display:grid;grid-template-columns:repeat(48,1fr);gap:2px;height:22px;margin-top:10px}
+.duty i{background:rgba(92,224,161,.25);border-radius:2px}
+.duty i.ev{background:var(--ember);box-shadow:0 0 8px var(--ember)}
+.duty i.hb{background:rgba(92,224,161,.7)}
+.lat{position:relative;height:90px;margin:18px 10px 0}
+.lat .ln{position:absolute;left:0;right:0;top:40px;height:2px;background:var(--line)}
+.lat .tk{position:absolute;top:30px;width:2px;height:22px;background:var(--dim);transform:translateX(-50%)}
+.lat .tl{position:absolute;top:58px;transform:translateX(-50%);font-family:var(--mono);font-size:.68rem;color:var(--muted);white-space:nowrap;text-align:center}
+.lat .tl b{display:block;color:var(--fg);font-size:.8rem}
+.lat .ball{position:absolute;top:40px;left:0;width:14px;height:14px;border-radius:50%;background:var(--amber);box-shadow:0 0 18px var(--amber);transform:translate(-50%,-50%)}
+
+/* tiger lifecycle strip */
+.life{display:grid;grid-template-columns:repeat(31,1fr);gap:3px;margin-top:6px}
+.life i{height:26px;border-radius:3px;background:rgba(79,209,255,.12);border:1px solid rgba(79,209,255,.15)}
+.life i.raw{background:var(--cyan);box-shadow:0 0 10px rgba(79,209,255,.6)}
+.life i.cmp{background:repeating-linear-gradient(135deg,rgba(79,209,255,.35) 0 3px,rgba(79,209,255,.1) 3px 6px)}
+.life i.drop{background:transparent;border-style:dashed;border-color:var(--ember)}
+.lifel{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.66rem;color:var(--dim);margin-top:6px}
+
+/* close */
+.close-wrap{text-align:left}
+
+@media (max-width:900px){
+  .cover-wrap,.hw,.sig,.biz,.g3,.g2,.pipe-side,.fus,.field{grid-template-columns:1fr}
+  .term-row{grid-template-columns:minmax(0,110px) 1fr 50px}
+  .g4,.team,.pipe{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nums{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flow{grid-template-columns:1fr}
+  .flow .arrow{width:2px;height:28px;justify-self:center;background:linear-gradient(180deg,var(--line),var(--cyan))}
+  .flow .arrow::after{right:-5px;top:auto;bottom:-1px;border:6px solid transparent;border-top-color:var(--cyan)}
+  .inner{justify-content:flex-start}
+  .rail{display:none}
+  .hud .hint{display:none}
+}
+@media (max-width:560px){
+  .g4,.team,.pipe,.nums,.feat{grid-template-columns:1fr}
+  .feat{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+  <canvas id="bgwave" aria-hidden="true"></canvas>
+  <div class="brand"><i></i>Order of Phoenix · hackCBS 9.0</div>
+
+  <!-- 1 COVER -->
+  <section class="slide" data-id="cover" aria-label="Cover">
+    <div class="inner">
+      <div class="cover-wrap">
+        <div>
+          <p class="eyebrow" data-in>Gemini track · TigerData track · live hardware</p>
+          <h1 class="cover-title" style="margin-top:14px" aria-label="Cyber Chaukidaar">
+            <span class="word"><span>Cyber</span></span><br><span class="word"><span class="fire">Chaukidaar</span></span>
+          </h1>
+          <p class="lead" data-in style="margin-top:18px">Ground-sensing sentries that tell a person from an animal, a tunnel from a footstep, and a drill from a door slam. Then explain it in plain words on your phone.</p>
+          <div class="row" data-in style="margin-top:22px">
+            <span class="tag"><span class="dot"></span><b>Node N1</b> online</span>
+            <span class="tag"><b>Panel</b> fw 2.2.0</span>
+            <span class="tag"><b>Gemini</b> + <b>TigerData</b> live</span>
+          </div>
+        </div>
+        <div class="cover-img" data-in>
+          <img src="img/sketch.jpg" alt="Sketch of the two devices: the transmitter control panel with three antennas and the sensor hub with two seismic probes and an LED ring">
+          <span class="cap">Transmitter · Sensor hub</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 PROBLEM -->
+  <section class="slide" data-id="problem" aria-label="The problem">
+    <div class="inner">
+      <p class="eyebrow" data-in>The problem</p>
+      <h2 data-in>Cameras and guards watch the surface. The threat arrives through the ground.</h2>
+      <div class="xsec" data-in aria-label="Cross-section: a camera sees the surface, ground probes hear the tunnel beneath it">
+        <svg viewBox="0 0 1000 300" role="img">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0D1A26"/><stop offset="1" stop-color="#0A1119"/></linearGradient>
+            <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A1410"/><stop offset="1" stop-color="#0E0B08"/></linearGradient>
+          </defs>
+          <rect x="0" y="0" width="1000" height="150" fill="url(#sky)"/>
+          <rect x="0" y="150" width="1000" height="150" fill="url(#soil)"/>
+          <line x1="0" y1="150" x2="1000" y2="150" stroke="#2A3742" stroke-width="2"/>
+          <!-- camera and its cone -->
+          <polygon points="128,78 1000,8 1000,150" fill="rgba(79,209,255,0.07)"/>
+          <line x1="120" y1="150" x2="120" y2="72" stroke="#5B6B79" stroke-width="4"/>
+          <rect x="108" y="62" width="30" height="18" rx="3" fill="#8FA0AE"/>
+          <circle cx="138" cy="71" r="5" fill="#4FD1FF"/>
+          <text x="150" y="40" fill="#4FD1FF">CAMERA SEES THE SURFACE</text>
+          <!-- person in the cone -->
+          <g class="walk"><circle cx="700" cy="112" r="9" fill="#EAF0F5"/><line x1="700" y1="121" x2="700" y2="148" stroke="#EAF0F5" stroke-width="5" stroke-linecap="round"/><line x1="700" y1="148" x2="690" y2="150" stroke="#EAF0F5" stroke-width="4"/><line x1="700" y1="148" x2="712" y2="150" stroke="#EAF0F5" stroke-width="4"/></g>
+          <text x="722" y="128">seen</text>
+          <!-- animal in the cone -->
+          <ellipse cx="880" cy="138" rx="18" ry="8" fill="#B8C4CC"/><circle cx="900" cy="132" r="6" fill="#B8C4CC"/>
+          <text x="846" y="120">seen… person or animal?</text>
+          <!-- tunnel under the cone -->
+          <ellipse cx="520" cy="245" rx="70" ry="24" fill="#05080B" stroke="#2A2118" stroke-width="2"/>
+          <circle cx="560" cy="245" r="7" fill="#FFB347"/>
+          <circle class="ring" cx="560" cy="245" r="110" fill="none" stroke="#FFB347" stroke-width="2"/>
+          <circle class="ring r2" cx="560" cy="245" r="110" fill="none" stroke="#FFB347" stroke-width="2"/>
+          <circle class="ring r3" cx="560" cy="245" r="110" fill="none" stroke="#FFB347" stroke-width="2"/>
+          <text x="430" y="290" fill="#FFB347">DIGGING · INVISIBLE FROM ABOVE</text>
+          <!-- ground probes -->
+          <rect class="spike" x="402" y="150" width="7" height="48" rx="2"/><circle cx="405" cy="146" r="7" fill="#111B25" stroke="#8FA0AE" stroke-width="2"/>
+          <rect class="spike s2" x="648" y="150" width="7" height="48" rx="2"/><circle cx="651" cy="146" r="7" fill="#111B25" stroke="#8FA0AE" stroke-width="2"/>
+          <text x="332" y="175">PROBE A</text><text x="668" y="175">PROBE B</text>
+          <text x="20" y="290">GROUND PROBES HEAR FOOTSTEPS · DIGGING · DRILLING</text>
+        </svg>
+      </div>
+      <div class="grid g3 pcards">
+        <div class="card" data-in><span class="k">Nuclear exclusion zones</span><div class="big-num">A guard in the hazard</div><p class="sub">A person stands a shift in a radiation area, mostly to tell wildlife from a trespasser.</p></div>
+        <div class="card" data-in><span class="k">Borders</span><div class="big-num">Tunnels under the fence</div><p class="sub">Digging happens beneath cameras and patrols. Ground vibration is the earliest evidence.</p></div>
+        <div class="card" data-in><span class="k">Jewelry stores</span><div class="big-num">In through the wall</div><p class="sub">After hours the entry point is a shared wall or the vault, where no camera is pointed.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 IDEA -->
+  <section class="slide" data-id="idea" aria-label="The idea">
+    <div class="inner">
+      <p class="eyebrow" data-in>The idea</p>
+      <h2 data-in>One battery sentry. Three missions. Switched in one tap.</h2>
+      <div class="flow">
+        <div class="card" data-in>
+          <span class="k">Sense</span>
+          <h3>Two ground probes + one radar</h3>
+          <p>ADXL345 seismic probes bolted to steel spikes feel footsteps, digging and drilling. A 24 GHz mmWave radar sees who is on the surface.</p>
+        </div>
+        <div class="arrow" data-in></div>
+        <div class="card" data-in>
+          <span class="k">Decide</span>
+          <h3>Edge ML, then mission rules</h3>
+          <p>A random forest on the ESP32, explainable fusion on the server, then rules for the active mission: animal or person, tunnel or walker, drill or knock.</p>
+        </div>
+        <div class="arrow" data-in></div>
+        <div class="card" data-in>
+          <span class="k">Respond</span>
+          <h3>Siren, silent alarm, explanation</h3>
+          <p>A siren on the node or a silent alert, a Gemini explanation on the phone, and a tamper-evident record in TigerData.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 HARDWARE -->
+  <section class="slide" data-id="hardware" aria-label="Hardware">
+    <div class="inner">
+      <p class="eyebrow" data-in>The hardware, built and running</p>
+      <h2 data-in>Two boards we soldered this week</h2>
+      <div class="hw">
+        <div class="photo" data-in style="aspect-ratio:4/3">
+          <img src="img/node.jpg" alt="The sensor hub: an ESP32-S3 on a green perfboard with a buzzer, two ADXL345 probe boards on ribbon cables and an 8-LED WS2812 ring">
+          <span class="lbl">Sensor hub · sentry node</span>
+          <span class="call" style="left:46%;top:56%">ESP32-S3</span>
+          <span class="call" style="left:60%;top:80%">ADXL345 probe A</span>
+          <span class="call" style="left:76%;top:66%">ADXL345 probe B</span>
+          <span class="call" style="left:46%;top:49%">buzzer</span>
+          <span class="call" style="left:78%;top:24%">WS2812 ring</span>
+        </div>
+        <div class="hw-side">
+          <div class="photo" data-in>
+            <img src="img/panel.jpg" alt="The transmitter control panel: an ESP32 with a small OLED, five push buttons and three antenna radio modules on an orange perfboard" style="object-position:50% 70%">
+            <span class="lbl">Transmitter · control panel</span>
+            <span class="call" style="left:62%;top:40%">OLED</span>
+            <span class="call" style="left:60%;top:78%">5-way keypad</span>
+            <span class="call" style="left:38%;top:12%">3× nRF24 radio</span>
+          </div>
+          <div class="card" data-in>
+            <div class="specs">
+              <div><b>Node</b> ESP32-S3, 2× ADXL345 (SPI), LD2420 radar, ring, buzzer, 18650 or USB</div>
+              <div><b>Panel</b> ESP32, 3× SSD1306, 5 keys, status pixel, nRF24 modules</div>
+              <div><b>Server</b> Node.js on a laptop or Raspberry Pi</div>
+              <div><b>Links</b> WiFi now; BLE and LoRa drivers in the firmware</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 SIGNALS -->
+  <section class="slide" data-id="signals" aria-label="What the ground sounds like">
+    <div class="inner">
+      <p class="eyebrow cy" data-in>What the ground sounds like</p>
+      <h2 data-in>Four threats, four signatures. Pick one.</h2>
+      <div class="chips" data-in role="group" aria-label="Scenario">
+        <button type="button" data-sc="human" aria-pressed="true">Person walking</button>
+        <button type="button" data-sc="animal" aria-pressed="false">Small animal</button>
+        <button type="button" data-sc="tunnel" aria-pressed="false">Digging (tunnel)</button>
+        <button type="button" data-sc="drill" aria-pressed="false">Drill on a wall</button>
+      </div>
+      <div class="sig">
+        <div class="scope" data-in>
+          <canvas id="scope"></canvas>
+          <div class="hdr"><span><b>probe A</b></span><span class="b2"><b class="b2">probe B</b></span><span>100 Hz · 1.5–40 Hz band · last 4 s</span></div>
+        </div>
+        <div class="grid" style="grid-template-columns:auto 1fr;gap:16px;align-items:start" data-in>
+          <div class="ppi" style="width:min(150px,30vw)" aria-label="Radar scope">
+            <div class="sweep"></div>
+            <div class="blip" id="blip"></div>
+            <div class="none" id="noblip">no target</div>
+          </div>
+          <div class="verdict">
+            <div class="feat">
+              <div><span class="k">impact gap</span><div class="v" id="f-ipi">550 ms</div></div>
+              <div><span class="k">dominant</span><div class="v" id="f-hz">8 Hz</div></div>
+              <div><span class="k">crest</span><div class="v" id="f-crest">4.1</div></div>
+            </div>
+            <div class="vt" id="v-title">Unauthorized person in hazard zone</div>
+            <p style="color:var(--muted);font-size:.92rem" id="v-why">Slow, heavy, low-pitched steps; 3 of 4 gait cues; radar confirms a surface target.</p>
+            <div><span class="sev crit" id="v-sev">CRITICAL · siren</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SITE MAP -->
+  <section class="slide" data-id="sitemap" aria-label="Live site map">
+    <div class="inner">
+      <p class="eyebrow cy" data-in>Localise and track</p>
+      <h2 data-in>Two nodes, one target, one trail</h2>
+      <div class="map" data-in><canvas id="mapc"></canvas></div>
+      <div class="legend" data-in>
+        <span><i style="background:var(--cyan)"></i>radar beam (8 m, 60°)</span>
+        <span><i style="background:#8FA0AE"></i>ground probes, 1.5 m apart</span>
+        <span><i style="background:var(--fg)"></i>true position</span>
+        <span><i style="background:var(--amber)"></i>estimated position + uncertainty</span>
+        <span><i style="background:var(--ember)"></i>5 s prediction · pre-arm of the next node</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 PIPELINE -->
+  <section class="slide" data-id="pipeline" aria-label="How it works">
+    <div class="inner">
+      <p class="eyebrow" data-in>How it works</p>
+      <h2 data-in>From a footstep to a decision in about a second</h2>
+      <div class="pipe">
+        <div class="card" data-in><span class="k">1 · Node</span><h3>Feel and classify</h3><p>Band-pass, STA/LTA trigger, 15 features, random forest on the chip, probe A/B timing.</p></div>
+        <div class="card" data-in><span class="k">2 · Fusion</span><h3>Re-check and fuse</h3><p>The server re-runs the forest, fuses seismic and radar with an explainable logistic regression.</p></div>
+        <div class="card" data-in><span class="k">3 · Mission</span><h3>Apply the use case</h3><p>Gait vote, tunnelling, drilling and impact rules. Every alert carries its reason in words.</p></div>
+        <div class="card" data-in><span class="k">4 · Respond</span><h3>Act in the right way</h3><p>Siren or silent alarm, phone app, OLED panel, WebSocket dashboard.</p></div>
+      </div>
+      <div class="rail" data-in aria-hidden="true"><b style="left:0%"></b><b style="left:33.3%"></b><b style="left:66.6%"></b><b style="left:100%"></b><i id="pulse"></i></div>
+      <div class="pipe-side">
+        <div class="card cool" data-in><div class="ic" style="background:rgba(79,209,255,.15);color:var(--cyan)">G</div><div><h3>Gemini</h3><p>Explains every real alert for the active mission, in the alert path.</p></div></div>
+        <div class="card hot" data-in><div class="ic" style="background:rgba(255,106,43,.15);color:var(--ember)">T</div><div><h3>TigerData</h3><p>Stores every reading and alert with a SHA-256 evidence hash.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FUSION -->
+  <section class="slide" data-id="fusion" aria-label="Explainable decision">
+    <div class="inner">
+      <p class="eyebrow cy" data-in>Explainable by construction</p>
+      <h2 data-in>Every alarm shows its working</h2>
+      <div class="chips" data-in role="group" aria-label="Fusion case">
+        <button type="button" data-fc="walker" aria-pressed="true">Walker at 3 m</button>
+        <button type="button" data-fc="wind" aria-pressed="false">Gusty wind, radar clear</button>
+      </div>
+      <div class="fus">
+        <div class="card" data-in>
+          <span class="k">Logistic-regression evidence terms · contribution to the intrusion logit (illustrative)</span>
+          <div class="terms" id="terms"></div>
+        </div>
+        <div class="card" data-in>
+          <div class="gauge">
+            <svg viewBox="0 0 200 115" aria-hidden="true">
+              <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#1F2C3A" stroke-width="14" stroke-linecap="round"/>
+              <path id="garc" d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#4FD1FF" stroke-width="14" stroke-linecap="round" stroke-dasharray="0 260"/>
+              <line x1="100" y1="20" x2="100" y2="34" stroke="#FFB347" stroke-width="2"/>
+              <line x1="147" y1="33" x2="155" y2="42" stroke="#FF4D5E" stroke-width="2"/>
+            </svg>
+            <div class="pct" id="gpct">0%</div>
+            <div class="lv" id="glv" style="color:var(--cyan)">intrusion probability</div>
+          </div>
+          <p class="guard" id="gguard">Amber at 50 %, red at 80 %. Rules on top of the model: one modality alone never alerts, and ML "environment" with a clear radar is capped.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 MISSIONS -->
+  <section class="slide" data-id="missions" aria-label="Missions">
+    <div class="inner">
+      <p class="eyebrow" data-in>Three missions on one design</p>
+      <h2 data-in>Same hardware, different rules, different response</h2>
+      <div class="tbl" data-in>
+        <table>
+          <thead><tr><th>Mission</th><th>How it decides</th><th>Response</th></tr></thead>
+          <tbody>
+            <tr data-in><td>Nuclear zone</td><td>Gait score from 4 bipedal cues, majority vote over the last 5 step windows. Animals step faster, lighter, higher-pitched.</td><td>Siren from MEDIUM to scare wildlife off. Any person is CRITICAL.</td></tr>
+            <tr data-in><td>Border tunnel</td><td>Rhythmic, low-frequency impacts from a source that does not move, nothing on the radar, sustained 4+ windows.</td><td>Silent alarm, so diggers are not warned.</td></tr>
+            <tr data-in><td>Jewelry store</td><td>Continuous high-frequency vibration over 4× ambient for 3 windows; sharp impacts; a target in the showroom after hours.</td><td>"Drilling on wall/vault" CRITICAL, 15 s siren.</td></tr>
+            <tr data-in><td>Perimeter</td><td>People and vehicles crossing, zones, loitering, tamper.</td><td>Siren from HIGH.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" data-in>Every alert carries its reason, for example "Rhythmic impacts every ~630 ms, source stationary, nothing on the surface radar".</p>
+    </div>
+  </section>
+
+  <!-- 8 GEMINI -->
+  <section class="slide" data-id="gemini" aria-label="Gemini track">
+    <div class="inner">
+      <p class="eyebrow cy" data-in>Gemini track</p>
+      <h2 data-in>Gemini turns sensor numbers into an operator's answer</h2>
+      <div class="grid g2">
+        <div class="term" data-in id="term" aria-live="polite"></div>
+        <div class="grid" style="gap:12px">
+          <div class="card cool" data-in><span class="k">Alert narration</span><p>Every real alert explained for the active mission: what, where, how sure, what to do. Streamed live over WebSocket.</p></div>
+          <div class="card cool" data-in><span class="k">Situation report</span><p>One click summarises the site: nodes, open alerts, recent activity.</p></div>
+          <div class="card cool" data-in><span class="k">Ask the data</span><p>Plain-English questions become one guarded, read-only SQL query on TigerData.</p></div>
+          <div class="card" data-in><span class="k">Engineering</span><p>gemini-flash-lite-latest · 12 s timeout · quota cooldown · template fallback, so an alarm never waits on the AI.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 TIGERDATA -->
+  <section class="slide" data-id="tiger" aria-label="TigerData track">
+    <div class="inner">
+      <p class="eyebrow" data-in>TigerData track</p>
+      <h2 data-in>TigerData is the memory and the evidence locker</h2>
+      <div class="grid g2">
+        <div class="card" data-in>
+          <span class="k">Activity per hour · from the telemetry_1s continuous aggregate (illustrative shape)</span>
+          <div class="bars" id="bars" aria-hidden="true"></div>
+          <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
+        </div>
+        <div class="card" data-in>
+          <div class="kv">
+            <b>hypertables</b><span>every telemetry packet and every alert, partitioned by time</span>
+            <b>telemetry_1s</b><span>continuous aggregate refreshed every 10 s; charts never scan raw rows</span>
+            <b>compression</b><span>chunks older than 1 day, segmented by node</span>
+            <b>retention</b><span>raw rows dropped after 30 days, alerts kept</span>
+            <b>sha-256</b><span>evidence hash stored with each alert, mission and label</span>
+            <b>read-only role</b><span>the only door Gemini's SQL can use</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" data-in>
+        <span class="k">Life of a telemetry chunk · one cell per day</span>
+        <div class="life" id="life" aria-hidden="true"></div>
+        <div class="lifel"><span>day 0 · raw rows, 1 s aggregate feeds the charts</span><span>day 1 → 29 · compressed, segmented by node</span><span>day 30 · raw dropped, alerts and hashes kept</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 NUMBERS -->
+  <section class="slide" data-id="numbers" aria-label="By the numbers">
+    <div class="inner">
+      <p class="eyebrow" data-in>By the numbers</p>
+      <div class="nums">
+        <div class="num" data-in><div class="v"><span data-count="0.3" data-dec="1">0.3</span><small> s</small></div><p>dashboard siren command to the node, measured</p></div>
+        <div class="num" data-in><div class="v"><span data-count="96">96</span><small>%</small></div><p>intrusion vs benign, edge model on synthetic validation data</p></div>
+        <div class="num" data-in><div class="v"><span data-count="15">15</span></div><p>seismic features computed on the ESP32</p></div>
+        <div class="num" data-in><div class="v"><span data-count="190">190</span><small> B</small></div><p>full site state for the OLED control panel</p></div>
+        <div class="num" data-in><div class="v"><span data-count="4">4</span></div><p>missions on one hardware design</p></div>
+        <div class="num" data-in><div class="v"><span data-count="13.7" data-dec="1">13.7</span><small>k</small></div><p>lines across firmware, server, dashboard and ML</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIELD -->
+  <section class="slide" data-id="field" aria-label="Built for the field">
+    <div class="inner">
+      <p class="eyebrow" data-in>Built for the field</p>
+      <h2 data-in>Weeks on one cell. Commands in under a second.</h2>
+      <div class="field">
+        <div class="card" data-in>
+          <span class="k">Node current by state · log scale</span>
+          <div class="pbars" id="pbars">
+            <div><b>1.3 mA</b><i style="height:32%"></i></div>
+            <div><b>1 mA</b><i style="height:29%"></i></div>
+            <div><b>180 mA</b><i class="hot" style="height:93%"></i></div>
+            <div><b>200 mA</b><i class="hot" style="height:94%"></i></div>
+          </div>
+          <div class="plabels"><span>ECO sleep</span><span>heartbeat / 60 s</span><span>event, radar on</span><span>LIVE stream</span></div>
+          <span class="k" style="margin-top:14px">A quiet day, 30-minute slots</span>
+          <div class="duty" id="duty" aria-hidden="true"></div>
+          <p style="margin-top:10px"><b style="color:var(--fg)">3–4 weeks</b> per 18650 on a quiet site. A 2 W solar panel keeps it up indefinitely.</p>
+        </div>
+        <div class="card" data-in>
+          <span class="k">Command latency, measured on our node</span>
+          <div class="lat" aria-hidden="true">
+            <div class="ln"></div>
+            <div class="tk" style="left:0%"></div><div class="tl" style="left:0%"><b>0 s</b>tap on phone</div>
+            <div class="tk" style="left:18%"></div><div class="tl" style="left:18%"><b>0.3 s</b>siren sounds</div>
+            <div class="tk" style="left:42%"></div><div class="tl" style="left:42%"><b>0.9 s</b>silence lands</div>
+            <div class="tk" style="left:100%"></div><div class="tl" style="left:100%"><b>5 s</b>heartbeat on mains</div>
+            <div class="ball" id="latball"></div>
+          </div>
+          <div class="kv" style="margin-top:28px">
+            <b>downlink</b><span>commands ride in the HTTP reply to the node's next check-in, no polling</span>
+            <b>on mains</b><span>checks in every 5 s and keeps WiFi up</span>
+            <b>on battery</b><span>checks in every 60 s, wakes on a seismic spike</span>
+            <b>offline</b><span>after 3 failed uplinks an armed node sounds its own siren</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 BUSINESS -->
+  <section class="slide" data-id="business" aria-label="Business model">
+    <div class="inner">
+      <p class="eyebrow" data-in>Business model</p>
+      <h2 data-in>Hardware once. AI review every month.</h2>
+      <div class="biz">
+        <div class="phase p1" data-in>
+          <span class="ph">Day 0 · one-time</span>
+          <h3>Hardware + installation</h3>
+          <div class="price"><span>Sentry node (probes, radar, ring, siren)</span><b>₹7,999</b></div>
+          <div class="price"><span>Control panel (OLED, keypad)</span><b>₹4,999</b></div>
+          <div class="price"><span>Site survey, spikes, coupling, calibration</span><b>₹6,000 / site</b></div>
+          <p class="note">Example pricing. Approximate node BOM ≈ ₹2,500 (ESP32-S3, 2× ADXL345, LD2420, ring, buzzer, cell, box), so hardware pays for itself and funds installation.</p>
+        </div>
+        <div class="phase p2" data-in>
+          <span class="ph">Month 1+ · SaaS</span>
+          <h3>AI review subscription</h3>
+          <div class="price"><span><b style="color:var(--cyan)">Watch</b> · alerts, phone app, 30-day history</span><b>₹999 / site / mo</b></div>
+          <div class="price"><span><b style="color:var(--cyan)">Review</b> · Gemini narration, weekly AI incident review, ask-the-data</span><b>₹2,999 / site / mo</b></div>
+          <div class="price"><span><b style="color:var(--cyan)">Enterprise</b> · silent-alarm integrations, long retention, SLA</span><b>custom</b></div>
+          <p class="note">Recurring revenue scales with sites, not with staff. Gemini flash-lite and TigerData compression keep the cost per site in rupees, not thousands.</p>
+        </div>
+      </div>
+      <div class="flywheel" data-in>
+        <i>install</i><em>→</em><i>alerts + AI reviews</i><em>→</em><i>labelled field data</i><em>→</em><i>better models</i><em>→</em><i>fewer false alarms</i><em>→</em><i>more sites</i>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 DEMO -->
+  <section class="slide" data-id="demo" aria-label="Live demo">
+    <div class="inner">
+      <p class="eyebrow" data-in>Live demo, real hardware</p>
+      <h2 data-in>Five minutes on this table</h2>
+      <div class="tbl" data-in>
+        <table>
+          <thead><tr><th>#</th><th>We do</th><th>You see</th></tr></thead>
+          <tbody>
+            <tr data-in><td>1</td><td>Walk past the node, site armed</td><td>Alert, buzzer and ring, Gemini narration on the phone</td></tr>
+            <tr data-in><td>2</td><td>Switch to Nuclear, tap the floor lightly</td><td>"Wildlife in exclusion zone", not a person</td></tr>
+            <tr data-in><td>3</td><td>Switch to Border, knock every 0.6 s</td><td>"Possible tunnelling", silent alarm</td></tr>
+            <tr data-in><td>4</td><td>Switch to Jewelry, press a vibrating phone on the surface</td><td>"Drilling or cutting on wall/vault"</td></tr>
+            <tr data-in><td>5</td><td>Silence from the OLED panel, ask Gemini a question</td><td>Siren stops; answer from TigerData</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" data-in>Backup: the built-in simulator runs the same pipeline if the venue WiFi fails.</p>
+    </div>
+  </section>
+
+  <!-- 13 TEAM -->
+  <section class="slide" data-id="team" aria-label="Team">
+    <div class="inner">
+      <p class="eyebrow" data-in>The team</p>
+      <h2 data-in><span class="fire">Order of Phoenix</span></h2>
+      <div class="team">
+        <div class="member" data-in><div class="ini">IS</div><div class="nm">Ishpreet Singh</div><div class="rl">Order of Phoenix</div></div>
+        <div class="member" data-in><div class="ini">PS</div><div class="nm">Prabhmehar Singh Sahni</div><div class="rl">Order of Phoenix</div></div>
+        <div class="member" data-in><div class="ini">VC</div><div class="nm">Vansh Chawla</div><div class="rl">Order of Phoenix</div></div>
+        <div class="member" data-in><div class="ini">AM</div><div class="nm">Avirath Magoo</div><div class="rl">Order of Phoenix</div></div>
+      </div>
+      <div class="row" data-in>
+        <span class="tag">firmware · C++ / PlatformIO</span><span class="tag">server · Node.js</span><span class="tag">dashboard · React PWA</span><span class="tag">ML · Python</span><span class="tag">hardware · perfboard, soldered by hand</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 CLOSE -->
+  <section class="slide" data-id="close" aria-label="Close">
+    <div class="inner close-wrap">
+      <p class="eyebrow" data-in>hackCBS 9.0 · Order of Phoenix</p>
+      <h1 data-in style="font-size:clamp(2rem,5.6vw,4.8rem)">Cheap sensors in the ground.<br><span class="fire">Clear answers on your phone.</span></h1>
+      <p class="lead" data-in>One sentry for exclusion zones, borders and stores. Explained by Gemini, remembered by TigerData, built by hand this week.</p>
+      <div class="row" data-in><span class="tag"><span class="dot"></span>walk past the node and watch</span></div>
+    </div>
+  </section>
+
+  <nav class="hud" aria-label="Slide navigation">
+    <span id="counter">1 / 17</span>
+    <span class="hint">← → to move · 1–4 switch scenarios on the signals slide · click the chips on the decision slide</span>
+    <div class="nav">
+      <button type="button" id="prev" aria-label="Previous slide">‹</button>
+      <button type="button" id="next" aria-label="Next slide">›</button>
+    </div>
+  </nav>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function(){
+  var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var G = window.gsap;
+  if (G && RM) G.globalTimeline.timeScale(40);
+
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var ids = slides.map(function(s){ return s.dataset.id; });
+  var cur = -1, busy = false;
+  var prog = document.getElementById('prog'), counter = document.getElementById('counter');
+
+  /* ---------- background seismic trace ---------- */
+  var bg = document.getElementById('bgwave'), bctx = bg.getContext('2d'), bt = 0;
+  function sizeBg(){ var r = bg.getBoundingClientRect(); bg.width = r.width * devicePixelRatio; bg.height = r.height * devicePixelRatio; }
+  sizeBg(); addEventListener('resize', sizeBg);
+  function drawBg(){
+    var w = bg.width, h = bg.height; bctx.clearRect(0,0,w,h);
+    var rows = 5;
+    for (var r = 0; r < rows; r++){
+      var y0 = h * (0.18 + r * 0.16), amp = h * 0.012 * (1 + r * 0.2);
+      bctx.beginPath();
+      for (var x = 0; x <= w; x += 4 * devicePixelRatio){
+        var t = x / w * 6 + bt * 0.9 + r * 1.7;
+        var k = Math.floor(t / 0.55), ph = t - k * 0.55;
+        var imp = Math.exp(-ph * 9) * Math.sin(2 * Math.PI * 8 * ph) * ((k * 7919 + r * 31) % 5 < 3 ? 1 : 0.25);
+        var y = y0 + (imp + Math.sin(t * 13 + r) * 0.05) * amp;
+        x === 0 ? bctx.moveTo(x, y) : bctx.lineTo(x, y);
+      }
+      bctx.strokeStyle = r % 2 ? 'rgba(79,209,255,0.10)' : 'rgba(255,106,43,0.10)'; bctx.lineWidth = 1.2 * devicePixelRatio; bctx.stroke();
+    }
+    bt += RM ? 0 : 0.012;
+    requestAnimationFrame(drawBg);
+  }
+  drawBg();
+
+  /* ---------- scope: synthetic signatures ---------- */
+  var SC = {
+    human:  { gap:.55, amp:1,   hz:8,  dec:9,  noise:.03, cont:0, radar:{x:62,y:38}, f:['550 ms','8 Hz','4.1'], title:'Unauthorized person in hazard zone', why:'Slow, heavy, low-pitched steps; 3 of 4 gait cues; radar confirms a surface target.', sev:'CRITICAL · siren', cls:'crit' },
+    animal: { gap:.22, amp:.38, hz:14, dec:14, noise:.03, cont:0, radar:{x:40,y:62}, f:['220 ms','14 Hz','3.8'], title:'Wildlife in exclusion zone', why:'Fast, light, higher-pitched footfalls; 1 of 4 gait cues over the last 5 windows.', sev:'MEDIUM · short siren', cls:'med' },
+    tunnel: { gap:.62, amp:.7,  hz:6,  dec:6,  noise:.03, cont:0, radar:null,        f:['620 ms','6 Hz','4.6'], title:'Possible tunnelling activity', why:'Rhythmic impacts, source stationary (A/B ratio steady), nothing on the surface radar for 4+ windows.', sev:'HIGH → CRITICAL · silent', cls:'silent' },
+    drill:  { gap:0,   amp:.55, hz:38, dec:0,  noise:.04, cont:1, radar:null,        f:['—','38 Hz','1.6'], title:'Drilling or cutting on wall/vault', why:'Continuous vibration, high-frequency, over 4× the ambient floor for 3 windows.', sev:'CRITICAL · 15 s siren', cls:'crit' }
+  };
+  var scKey = 'human', sc = document.getElementById('scope'), sctx = sc.getContext('2d'), st = 0, lastS = 0, scopeOn = false;
+  function sizeScope(){ var r = sc.getBoundingClientRect(); if (!r.width) return; sc.width = r.width * devicePixelRatio; sc.height = r.height * devicePixelRatio; }
+  addEventListener('resize', sizeScope);
+  function sig(t, p){
+    var v = 0;
+    if (p.cont){ v = p.amp * Math.sin(2*Math.PI*p.hz*t) * (0.8 + 0.2*Math.sin(2*Math.PI*0.7*t)); }
+    else { var k = Math.floor(t / p.gap), ph = t - k * p.gap, sc2 = (k % 3 === 1) ? 0.75 : 1; v = p.amp * sc2 * Math.exp(-ph * p.dec) * Math.sin(2*Math.PI*p.hz*ph); }
+    return v + (Math.sin(t*97.3)*Math.sin(t*41.7)) * p.noise;
+  }
+  function drawScope(){
+    if (!scopeOn) return;
+    if (!sc.width) sizeScope();
+    var w = sc.width, h = sc.height, p = SC[scKey]; sctx.clearRect(0,0,w,h);
+    sctx.strokeStyle = 'rgba(255,255,255,0.05)'; sctx.lineWidth = devicePixelRatio;
+    for (var gx = 0; gx < w; gx += w/8){ sctx.beginPath(); sctx.moveTo(gx,0); sctx.lineTo(gx,h); sctx.stroke(); }
+    [[0.33,'rgba(79,209,255,0.95)',1,0],[0.72,'rgba(255,179,71,0.9)',0.78,0.012]].forEach(function(tr){
+      var yc = h*tr[0], amp = h*0.17*tr[2]; sctx.beginPath();
+      for (var x = 0; x <= w; x += 2*devicePixelRatio){ var t = st - 4 + (x/w)*4 - tr[3]; var y = yc - sig(t,p)*amp; x===0?sctx.moveTo(x,y):sctx.lineTo(x,y); }
+      sctx.strokeStyle = tr[1]; sctx.lineWidth = 1.6*devicePixelRatio; sctx.shadowColor = tr[1]; sctx.shadowBlur = 8*devicePixelRatio; sctx.stroke(); sctx.shadowBlur = 0;
+    });
+    var nowS = performance.now(); st += RM ? 0 : Math.min(0.1, (nowS - (lastS || nowS)) / 1000); lastS = nowS;
+    requestAnimationFrame(drawScope);
+  }
+  function setScenario(k){
+    scKey = k; var p = SC[k];
+    document.querySelectorAll('.chips button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.sc === k)); });
+    var blip = document.getElementById('blip'), nob = document.getElementById('noblip');
+    if (p.radar){ blip.style.opacity = 1; blip.style.left = p.radar.x+'%'; blip.style.top = p.radar.y+'%'; nob.style.opacity = 0; } else { blip.style.opacity = 0; nob.style.opacity = 1; }
+    var f = ['f-ipi','f-hz','f-crest'].map(function(i){ return document.getElementById(i); });
+    var vt = document.getElementById('v-title'), vw = document.getElementById('v-why'), vs = document.getElementById('v-sev');
+    var apply = function(){ f.forEach(function(el,i){ el.textContent = p.f[i]; }); vt.textContent = p.title; vw.textContent = p.why; vs.textContent = p.sev; vs.className = 'sev ' + p.cls; };
+    if (G){ var tl = G.timeline(); tl.to(f.concat([vt,vw,vs]), {opacity:0, y:-6, duration:.18, stagger:.03, onComplete:apply}).to(f.concat([vt,vw,vs]), {opacity:1, y:0, duration:.35, stagger:.04, ease:'power2.out'}); } else apply();
+  }
+  document.querySelectorAll('.chips button').forEach(function(b){ b.addEventListener('click', function(){ setScenario(b.dataset.sc); }); });
+
+  /* ---------- gemini typewriter ---------- */
+  var termEl = document.getElementById('term'), termTimer = null;
+  var script = [
+    ['pr','alert #2041 · N1 · mission: Border & Tunnel Watch'],
+    ['ans','Rhythmic low-frequency impacts every ~630 ms from a source that has not moved, with nothing on the surface radar, now sustained for 135 windows. This matches digging rather than a walker. Treat as possible tunnelling near N1. Silent alarm kept: do not sound sirens. Dispatch a patrol to the north fence and watch N2 for the same rhythm.'],
+    ['pr','> how many alerts at the north gate tonight?'],
+    ['ans','SELECT count(*) FROM alerts WHERE node_id = \'N1\' AND t > now() - interval \'12 hours\';  →  3']
+  ];
+  function runTerm(){
+    clearTimeout(termTimer); termEl.innerHTML = '';
+    var li = 0, ci = 0, line = null;
+    function step(){
+      if (li >= script.length) return;
+      if (!line){ line = document.createElement('div'); line.className = script[li][0]; termEl.appendChild(line); if (li) line.style.marginTop = '10px'; }
+      var txt = script[li][1];
+      ci += (RM ? txt.length : (script[li][0] === 'ans' ? 2 : 1));
+      line.innerHTML = txt.slice(0, ci) + (ci < txt.length ? '<span class="cur"></span>' : '');
+      if (ci >= txt.length){ li++; ci = 0; line = null; termTimer = setTimeout(step, 500); }
+      else termTimer = setTimeout(step, script[li][0] === 'ans' ? 14 : 40);
+    }
+    step();
+  }
+
+  /* ---------- tiger bars ---------- */
+  var barsEl = document.getElementById('bars');
+  var shape = [2,1,1,1,2,3,5,7,6,5,4,4,5,5,4,4,5,7,9,8,6,4,3,2];
+  shape.forEach(function(v,i){ var b = document.createElement('i'); b.style.height = (v/9*100)+'%'; if (i>=17 && i<=19) b.className = 'hot'; barsEl.appendChild(b); });
+
+  /* ---------- site map: two nodes track a walker ---------- */
+  var mc = document.getElementById('mapc'), mctx = mc.getContext('2d'), mapOn = false, mt = 0, lastM = 0, trail = [];
+  var W = 40, Hm = 20;  // metres
+  var NODES = [{id:'N1', x:12, y:14}, {id:'N2', x:28, y:14}];
+  function sizeMap(){ var r = mc.getBoundingClientRect(); if (!r.width) return; mc.width = r.width*devicePixelRatio; mc.height = r.height*devicePixelRatio; }
+  addEventListener('resize', sizeMap);
+  function drawMap(){
+    if (!mapOn) return;
+    if (!mc.width) sizeMap();
+    var w = mc.width, h = mc.height, sx = w/W, sy = h/Hm, dpr = devicePixelRatio;
+    var X = function(m){ return m*sx; }, Y = function(m){ return m*sy; };
+    mctx.clearRect(0,0,w,h);
+    // grid
+    mctx.strokeStyle = 'rgba(255,255,255,0.04)'; mctx.lineWidth = dpr;
+    for (var gx = 0; gx <= W; gx += 2){ mctx.beginPath(); mctx.moveTo(X(gx),0); mctx.lineTo(X(gx),h); mctx.stroke(); }
+    for (var gy = 0; gy <= Hm; gy += 2){ mctx.beginPath(); mctx.moveTo(0,Y(gy)); mctx.lineTo(w,Y(gy)); mctx.stroke(); }
+    // fence
+    mctx.setLineDash([8*dpr,6*dpr]); mctx.strokeStyle = 'rgba(255,179,71,0.5)'; mctx.lineWidth = 2*dpr; mctx.beginPath(); mctx.moveTo(0,Y(3)); mctx.lineTo(w,Y(3)); mctx.stroke(); mctx.setLineDash([]);
+    mctx.fillStyle = 'rgba(255,179,71,0.7)'; mctx.font = (11*dpr)+'px JetBrains Mono, monospace'; mctx.fillText('FENCE LINE', 10*dpr, Y(3)-6*dpr);
+    // walker
+    var speed = 1.25, px = ((mt*speed + 9) % (W+6)) - 3, py = 7.5 + Math.sin(mt*0.6)*0.6, vx = speed, vy = Math.cos(mt*0.6)*0.36;
+    var heading = Math.atan2(vy, vx);
+    // which node sees it
+    var seenBy = null;
+    NODES.forEach(function(n){
+      var dx = px-n.x, dy = py-n.y, d = Math.hypot(dx,dy), ang = Math.atan2(-dy,dx) - Math.PI/2;  // 0 = straight up
+      n.sees = d <= 8 && Math.abs(Math.atan2(Math.sin(ang),Math.cos(ang))) <= Math.PI/6; n.d = d;
+      if (n.sees) seenBy = n;
+    });
+    var toward = NODES[1], prearm = !toward.sees && px > 14 && px < toward.x && vx > 0;
+    // beams + nodes
+    NODES.forEach(function(n){
+      var a0 = -Math.PI/2 - Math.PI/6, a1 = -Math.PI/2 + Math.PI/6;
+      var g = mctx.createRadialGradient(X(n.x),Y(n.y),0,X(n.x),Y(n.y),8*sx);
+      var hot = n.sees || (prearm && n === toward);
+      g.addColorStop(0, hot ? 'rgba(79,209,255,0.35)' : 'rgba(79,209,255,0.14)'); g.addColorStop(1,'rgba(79,209,255,0)');
+      mctx.beginPath(); mctx.moveTo(X(n.x),Y(n.y)); mctx.arc(X(n.x),Y(n.y),8*sx,a0,a1); mctx.closePath(); mctx.fillStyle = g; mctx.fill();
+      mctx.strokeStyle = hot ? 'rgba(79,209,255,0.6)' : 'rgba(79,209,255,0.25)'; mctx.lineWidth = dpr; mctx.stroke();
+      // sweep
+      var sa = a0 + ((mt*1.2 + (n===NODES[0]?0:1.5)) % 1) * (a1-a0);
+      mctx.beginPath(); mctx.moveTo(X(n.x),Y(n.y)); mctx.lineTo(X(n.x)+Math.cos(sa)*8*sx, Y(n.y)+Math.sin(sa)*8*sx); mctx.strokeStyle = 'rgba(79,209,255,0.5)'; mctx.stroke();
+      // probes
+      mctx.fillStyle = '#8FA0AE'; [-0.75,0.75].forEach(function(o){ mctx.beginPath(); mctx.arc(X(n.x+o),Y(n.y+0.6),3*dpr,0,7); mctx.fill(); });
+      // node body
+      mctx.fillStyle = '#111B25'; mctx.strokeStyle = hot ? '#4FD1FF' : '#5B6B79'; mctx.lineWidth = 2*dpr;
+      mctx.beginPath(); mctx.rect(X(n.x)-7*dpr, Y(n.y)-7*dpr, 14*dpr, 14*dpr); mctx.fill(); mctx.stroke();
+      mctx.fillStyle = '#EAF0F5'; mctx.font = 'bold '+(12*dpr)+'px JetBrains Mono, monospace'; mctx.fillText(n.id, X(n.x)+11*dpr, Y(n.y)+4*dpr);
+      if (prearm && n === toward){ mctx.fillStyle = '#FF6A2B'; mctx.font = (11*dpr)+'px JetBrains Mono, monospace'; mctx.fillText('PRE-ARM · radar LIVE', X(n.x)+11*dpr, Y(n.y)+18*dpr); }
+    });
+    // estimate + trail
+    if (seenBy){
+      var n = seenBy, ex = px + Math.sin(mt*7.3)*0.25, ey = py + Math.cos(mt*5.1)*0.45;
+      trail.push({x:ex,y:ey}); if (trail.length > 60) trail.shift();
+      mctx.beginPath(); trail.forEach(function(p,i){ i?mctx.lineTo(X(p.x),Y(p.y)):mctx.moveTo(X(p.x),Y(p.y)); }); mctx.strokeStyle = 'rgba(255,179,71,0.5)'; mctx.lineWidth = 2*dpr; mctx.stroke();
+      // uncertainty ellipse oriented toward the node (range good, bearing coarse)
+      var bear = Math.atan2(ey-n.y, ex-n.x);
+      mctx.save(); mctx.translate(X(ex),Y(ey)); mctx.rotate(bear); mctx.beginPath(); mctx.ellipse(0,0,0.35*sx,1.1*sy,0,0,7); mctx.fillStyle='rgba(255,179,71,0.12)'; mctx.fill(); mctx.strokeStyle='rgba(255,179,71,0.8)'; mctx.lineWidth=dpr; mctx.stroke(); mctx.restore();
+      mctx.strokeStyle = '#FFB347'; mctx.lineWidth = 1.5*dpr; mctx.beginPath(); mctx.moveTo(X(ex)-8*dpr,Y(ey)); mctx.lineTo(X(ex)+8*dpr,Y(ey)); mctx.moveTo(X(ex),Y(ey)-8*dpr); mctx.lineTo(X(ex),Y(ey)+8*dpr); mctx.stroke();
+      // range ring to the node
+      mctx.setLineDash([3*dpr,4*dpr]); mctx.strokeStyle = 'rgba(79,209,255,0.35)'; mctx.beginPath(); mctx.arc(X(n.x),Y(n.y),n.d*sx,-Math.PI/2-Math.PI/6,-Math.PI/2+Math.PI/6); mctx.stroke(); mctx.setLineDash([]);
+      // prediction
+      var fx = px + vx*5, fy = py + vy*5;
+      mctx.strokeStyle = '#FF6A2B'; mctx.lineWidth = 2*dpr; mctx.setLineDash([6*dpr,4*dpr]); mctx.beginPath(); mctx.moveTo(X(ex),Y(ey)); mctx.lineTo(X(fx),Y(fy)); mctx.stroke(); mctx.setLineDash([]);
+      mctx.fillStyle = '#FF6A2B'; mctx.beginPath(); mctx.arc(X(fx),Y(fy),4*dpr,0,7); mctx.fill();
+      // HUD
+      var eta = (toward.x - px) / speed;
+      var lines = ['TARGET  HUMAN  p=0.96', 'RANGE   '+n.d.toFixed(1)+' m from '+n.id, 'SPEED   '+Math.hypot(vx,vy).toFixed(1)+' m/s  heading '+Math.round(((heading*180/Math.PI)+360)%360)+'°'];
+      if (eta > 0 && n === NODES[0]) lines.push('ETA     '+Math.max(0,eta).toFixed(0)+' s → N2');
+      mctx.fillStyle = 'rgba(7,11,16,0.75)'; mctx.fillRect(w-215*dpr, 10*dpr, 205*dpr, (lines.length*16+12)*dpr);
+      mctx.fillStyle = '#EAF0F5'; mctx.font = (11*dpr)+'px JetBrains Mono, monospace'; lines.forEach(function(l,i){ mctx.fillText(l, w-205*dpr, (28+i*16)*dpr); });
+    } else { trail.length = 0; mctx.fillStyle = 'rgba(143,160,174,0.8)'; mctx.font = (11*dpr)+'px JetBrains Mono, monospace'; mctx.fillText('ALL CLEAR · radars in ECO', w-190*dpr, 28*dpr); }
+    // true position
+    mctx.fillStyle = '#EAF0F5'; mctx.beginPath(); mctx.arc(X(px),Y(py),4*dpr,0,7); mctx.fill();
+    mctx.strokeStyle = 'rgba(234,240,245,0.5)'; mctx.lineWidth = dpr; mctx.beginPath(); mctx.arc(X(px),Y(py),9*dpr,0,7); mctx.stroke();
+    var nowM = performance.now(); mt += RM ? 0 : Math.min(0.1, (nowM - (lastM || nowM)) / 1000); lastM = nowM;
+    requestAnimationFrame(drawMap);
+  }
+
+  /* ---------- fusion: evidence waterfall + gauge ---------- */
+  var FUS = {
+    walker: { terms:[['radar target present',1.8],['radar energy',0.6],['probe A RMS',0.9],['probe B RMS',0.7],['both probes agree',1.1],['A/B cross-correlation',0.5],['edge RF p(HUMAN)',1.4],['environment prior',-0.8],['bias',-3.1]], note:'Walker 3 m in front of N1: radar and both probes agree, the forest says HUMAN. Alert at HIGH; the mission then decides the response.' },
+    wind:   { terms:[['radar target present',0],['radar energy',0],['probe A RMS',0.8],['probe B RMS',0.6],['both probes agree',0.4],['A/B cross-correlation',0.1],['edge RF p(HUMAN)',-1.2],['environment prior',-0.8],['bias',-3.1]], note:'Gusty wind: probes are busy but incoherent, the forest says ENVIRONMENT, the radar is clear. Probability capped, no alarm, logged as environment.' }
+  };
+  var termsEl = document.getElementById('terms'), fusKey = 'walker';
+  function buildTerms(){
+    termsEl.innerHTML = '';
+    FUS.walker.terms.forEach(function(t){
+      var r = document.createElement('div'); r.className = 'term-row';
+      r.innerHTML = '<span class="lab">'+t[0]+'</span><div class="trk"><div class="bar"></div></div><span class="val">0.0</span>';
+      termsEl.appendChild(r);
+    });
+  }
+  buildTerms();
+  function setFusion(k, instant){
+    fusKey = k; var f = FUS[k], sum = 0;
+    document.querySelectorAll('.chips button[data-fc]').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.fc === k)); });
+    var rows = termsEl.querySelectorAll('.term-row'), MAX = 3.2;
+    f.terms.forEach(function(t,i){
+      sum += t[1];
+      var bar = rows[i].querySelector('.bar'), val = rows[i].querySelector('.val'), pct = Math.min(50, Math.abs(t[1])/MAX*50);
+      bar.className = 'bar' + (t[1] < 0 ? ' neg' : '');
+      var target = t[1] >= 0 ? {left:'50%', width:pct+'%'} : {left:(50-pct)+'%', width:pct+'%'};
+      if (!G || instant){ bar.style.left = target.left; bar.style.width = target.width; val.textContent = (t[1]>0?'+':'')+t[1].toFixed(1); }
+      else { G.to(bar, {left:target.left, width:target.width, duration:.6, delay:i*.07, ease:'power3.out'}); var o={v:parseFloat(val.textContent)||0}; G.to(o,{v:t[1],duration:.6,delay:i*.07,onUpdate:function(){ val.textContent=(o.v>0?'+':'')+o.v.toFixed(1); }}); }
+    });
+    var p = 1/(1+Math.exp(-sum)), arc = document.getElementById('garc'), pct = document.getElementById('gpct'), lv = document.getElementById('glv');
+    var col = p >= .8 ? '#FF4D5E' : p >= .5 ? '#FFB347' : '#5CE0A1', lvl = p >= .8 ? 'HIGH · alert' : p >= .5 ? 'MEDIUM · suspect' : 'LOW · no alarm';
+    document.getElementById('gguard').textContent = f.note;
+    var apply = function(v){ arc.setAttribute('stroke-dasharray', (v*251.3)+' 260'); pct.textContent = Math.round(v*100)+'%'; };
+    arc.setAttribute('stroke', col); lv.textContent = lvl; lv.style.color = col; pct.style.color = col;
+    if (!G || instant) apply(p); else { var g={v:parseFloat(pct.textContent)/100||0}; G.to(g,{v:p,duration:1.1,delay:.3,ease:'power3.out',onUpdate:function(){ apply(g.v); }}); }
+  }
+  document.querySelectorAll('.chips button[data-fc]').forEach(function(b){ b.addEventListener('click', function(){ setFusion(b.dataset.fc); }); });
+
+  /* ---------- field: duty strip, latency ball ---------- */
+  var duty = document.getElementById('duty');
+  for (var d = 0; d < 48; d++){ var c = document.createElement('i'); if (d === 9 || d === 27 || d === 41) c.className = 'ev'; else if (d % 6 === 3) c.className = 'hb'; duty.appendChild(c); }
+  var latTl = null;
+
+  /* ---------- tiger: chunk lifecycle ---------- */
+  var life = document.getElementById('life');
+  for (var L = 0; L <= 30; L++){ var cell = document.createElement('i'); life.appendChild(cell); }
+  function runLife(){
+    var cells = life.querySelectorAll('i'); cells.forEach(function(c){ c.className = ''; });
+    if (!G){ cells.forEach(function(c,i){ c.className = i===0?'raw':i<30?'cmp':'drop'; }); return; }
+    var tl = G.timeline({delay:.4});
+    cells.forEach(function(c,i){ tl.call(function(){ c.className = i===0?'raw':i<30?'cmp':'drop'; }, null, i*.05); });
+    tl.from(cells, {scaleY:0, duration:.4, stagger:.05, ease:'power2.out', transformOrigin:'bottom'}, 0);
+  }
+
+  /* ---------- per-slide enter hooks ---------- */
+  var pulseTl = null;
+  var enter = {
+    cover: function(s, tl){
+      if (!G) return;
+      tl.from(s.querySelectorAll('.cover-title .word span'), {yPercent:110, duration:.9, stagger:.12, ease:'power4.out'}, 0);
+      // embers
+      for (var i = 0; i < 18; i++){
+        var e = document.createElement('span'); e.className = 'ember'; var sz = 3 + Math.random()*5; e.style.width = e.style.height = sz+'px';
+        e.style.left = (10 + Math.random()*50)+'%'; e.style.top = (60 + Math.random()*30)+'%'; s.appendChild(e);
+        G.to(e, {opacity: .9, y: -(120 + Math.random()*220), x: (Math.random()-.5)*80, duration: 2.5 + Math.random()*2.5, delay: Math.random()*2, repeat: -1, ease:'sine.out', onRepeat: (function(el){ return function(){ G.set(el, {opacity:0, y:0}); }; })(e)});
+        G.to(e, {opacity:0, duration:1.2, delay: 2 + Math.random()*2, repeat:-1, repeatDelay: 2});
+      }
+    },
+    signals: function(){ scopeOn = true; lastS = 0; sizeScope(); drawScope(); setScenario(scKey); },
+    pipeline: function(s, tl){
+      if (!G) return;
+      if (pulseTl) pulseTl.kill();
+      pulseTl = G.timeline({repeat:-1, repeatDelay:.6, delay:.8});
+      var cards = s.querySelectorAll('.pipe .card');
+      [0,33.3,66.6,100].forEach(function(x,i){
+        pulseTl.to('#pulse', {left: x+'%', duration: i ? .7 : 0, ease:'power2.inOut'});
+        pulseTl.fromTo(cards[i], {boxShadow:'0 0 0 0 rgba(79,209,255,0)'}, {boxShadow:'0 0 0 2px rgba(79,209,255,.6)', duration:.2, yoyo:true, repeat:1});
+      });
+    },
+    gemini: function(){ runTerm(); },
+    sitemap: function(){ mapOn = true; lastM = 0; trail.length = 0; sizeMap(); drawMap(); },
+    fusion: function(){
+      termsEl.querySelectorAll('.bar').forEach(function(b){ b.style.width = '0%'; b.style.left = '50%'; });
+      termsEl.querySelectorAll('.val').forEach(function(v){ v.textContent = '0.0'; });
+      document.getElementById('garc').setAttribute('stroke-dasharray','0 260'); document.getElementById('gpct').textContent = '0%';
+      setTimeout(function(){ setFusion(fusKey); }, 350);
+    },
+    field: function(s, tl){
+      if (!G) return;
+      tl.from(s.querySelectorAll('.pbars i'), {scaleY:0, duration:.8, stagger:.1, ease:'power3.out'}, .2);
+      tl.from(s.querySelectorAll('.duty i'), {opacity:0, duration:.3, stagger:.012}, .4);
+      if (latTl) latTl.kill();
+      latTl = G.timeline({repeat:-1, repeatDelay:1.2, delay:1});
+      latTl.fromTo('#latball', {left:'0%'}, {left:'18%', duration:.3, ease:'none'}).to('#latball',{scale:1.6,duration:.12,yoyo:true,repeat:1})
+           .to('#latball', {left:'42%', duration:.6, ease:'none'}).to('#latball',{scale:1.6,duration:.12,yoyo:true,repeat:1})
+           .to('#latball', {left:'100%', duration:1.6, ease:'none'}).to('#latball',{opacity:0,duration:.3}).set('#latball',{left:'0%',opacity:1});
+    },
+    tiger: function(s, tl){ if (G) tl.from(s.querySelectorAll('.bars i'), {scaleY:0, duration:.7, stagger:.03, ease:'power3.out'}, .2); runLife(); },
+    numbers: function(s){
+      s.querySelectorAll('[data-count]').forEach(function(el){
+        var end = parseFloat(el.dataset.count), dec = parseInt(el.dataset.dec || '0', 10), o = {v:0};
+        if (!G){ el.textContent = end.toFixed(dec); return; }
+        G.to(o, {v:end, duration:1.6, ease:'power3.out', delay:.2, onUpdate:function(){ el.textContent = o.v.toFixed(dec); }});
+      });
+    },
+    team: function(s, tl){ if (G) tl.from(s.querySelectorAll('.member .ini'), {scale:.4, rotate:-20, duration:.6, stagger:.08, ease:'back.out(2)'}, .2); }
+  };
+  var leave = { signals: function(){ scopeOn = false; }, sitemap: function(){ mapOn = false; }, field: function(){ if (latTl) latTl.kill(); }, pipeline: function(){ if (pulseTl) pulseTl.kill(); }, gemini: function(){ clearTimeout(termTimer); } };
+
+  /* ---------- deck engine ---------- */
+  function go(n, dir){
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    if (n === cur || busy) return;
+    dir = dir || (n > cur ? 1 : -1);
+    var prev = slides[cur], next = slides[n];
+    if (prev && leave[prev.dataset.id]) leave[prev.dataset.id]();
+    cur = n; busy = true;
+    counter.textContent = (n+1) + ' / ' + slides.length;
+    prog.style.width = ((n+1)/slides.length*100) + '%';
+    try { history.replaceState(null, '', '#' + ids[n]); } catch(e){}
+    var show = function(){
+      next.classList.add('active'); next.querySelector('.inner').scrollTop = 0;
+      if (!G){ busy = false; if (enter[next.dataset.id]) enter[next.dataset.id](next, null); return; }
+      var tl = G.timeline({onComplete:function(){ busy = false; }});
+      tl.fromTo(next, {opacity:0, x: 60*dir}, {opacity:1, x:0, duration:.55, ease:'power3.out'}, 0);
+      tl.from(next.querySelectorAll('[data-in]'), {y:30, opacity:0, duration:.75, stagger:.07, ease:'power3.out', clearProps:'transform,opacity'}, .1);
+      if (enter[next.dataset.id]) enter[next.dataset.id](next, tl);
+      tl.eventCallback('onComplete', function(){ busy = false; });
+      setTimeout(function(){ busy = false; }, 900);
+    };
+    if (prev && G){ G.to(prev, {opacity:0, x:-50*dir, duration:.3, ease:'power2.in', onComplete:function(){ prev.classList.remove('active'); G.set(prev, {clearProps:'all'}); show(); }}); }
+    else { if (prev) prev.classList.remove('active'); show(); }
+  }
+  document.getElementById('next').addEventListener('click', function(){ go(cur+1, 1); });
+  document.getElementById('prev').addEventListener('click', function(){ go(cur-1, -1); });
+  addEventListener('keydown', function(e){
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); go(cur+1, 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); go(cur-1, -1); }
+    else if (e.key === 'Home') go(0, -1);
+    else if (e.key === 'End') go(slides.length-1, 1);
+    else if (ids[cur] === 'signals' && /^[1-4]$/.test(e.key)) setScenario(['human','animal','tunnel','drill'][+e.key-1]);
+    else if (ids[cur] === 'fusion' && /^[12]$/.test(e.key)) setFusion(['walker','wind'][+e.key-1]);
+  });
+  var tx = null;
+  addEventListener('touchstart', function(e){ tx = e.touches[0].clientX; }, {passive:true});
+  addEventListener('touchend', function(e){ if (tx === null) return; var dx = e.changedTouches[0].clientX - tx; tx = null; if (Math.abs(dx) > 60) go(cur + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1); }, {passive:true});
+  addEventListener('hashchange', function(){ var i = ids.indexOf(location.hash.slice(1)); if (i >= 0) go(i); });
+
+  var start = ids.indexOf(location.hash.slice(1)); go(start >= 0 ? start : 0, 1);
+})();
+</script>
+</body>
+</html>
